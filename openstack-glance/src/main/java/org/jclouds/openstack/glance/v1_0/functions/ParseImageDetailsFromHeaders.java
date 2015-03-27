@@ -28,12 +28,15 @@ import static org.jclouds.openstack.glance.v1_0.options.ImageField.MIN_DISK;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.MIN_RAM;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.NAME;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.OWNER;
+import static org.jclouds.openstack.glance.v1_0.options.ImageField.PROPERTY;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.SIZE;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.STATUS;
 import static org.jclouds.openstack.glance.v1_0.options.ImageField.UPDATED_AT;
 
 import javax.inject.Inject;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import org.jclouds.date.DateService;
 import org.jclouds.http.HttpResponse;
 import org.jclouds.openstack.glance.v1_0.domain.ContainerFormat;
@@ -42,6 +45,8 @@ import org.jclouds.openstack.glance.v1_0.domain.Image.Status;
 import org.jclouds.openstack.glance.v1_0.domain.ImageDetails;
 
 import com.google.common.base.Function;
+
+import java.util.Map;
 
 /**
  * This parses {@link ImageDetails} from HTTP headers.
@@ -78,6 +83,19 @@ public class ParseImageDetailsFromHeaders implements Function<HttpResponse, Imag
       if (diskFormat != null) builder.diskFormat(DiskFormat.fromValue(diskFormat));
       if (deletedAt != null) builder.deletedAt(dateService.iso8601SecondsDateParse(deletedAt));
       if (size != null) builder.size(Long.parseLong(size));
+
+       Map<String, String> properties = Maps.newHashMap();
+       String propertyHeader = PROPERTY.asHeader();
+       for (Map.Entry<String, String> headerEntry : from.getHeaders().entries()) {
+           String headerName = headerEntry.getKey();
+           if (!Strings.isNullOrEmpty(headerName) && headerName.startsWith(propertyHeader)
+                   && headerName.length() > propertyHeader.length()) {
+               String propertyName = headerName.substring(PROPERTY.asHeader().length() + 1).toLowerCase();
+               String propertyValue = headerEntry.getValue();
+               properties.put(propertyName, propertyValue);
+           }
+       }
+       builder.properties(properties);
 
       return builder.build();
    }

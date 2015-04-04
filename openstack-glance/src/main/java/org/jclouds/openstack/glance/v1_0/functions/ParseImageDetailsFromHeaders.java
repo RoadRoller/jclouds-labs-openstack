@@ -61,30 +61,28 @@ public class ParseImageDetailsFromHeaders implements Function<HttpResponse, Imag
 
    @Override
    public ImageDetails apply(HttpResponse from) {
-      ImageDetails.Builder<?> builder = ImageDetails.builder().id(from.getFirstHeaderOrNull(ID.asHeader()))
-            .name(from.getFirstHeaderOrNull(NAME.asHeader())).checksum(from.getFirstHeaderOrNull(CHECKSUM.asHeader()))
-            .minDisk(Long.parseLong(from.getFirstHeaderOrNull(MIN_DISK.asHeader())))
-            .minRam(Long.parseLong(from.getFirstHeaderOrNull(MIN_RAM.asHeader())))
-            .isPublic(Boolean.parseBoolean(from.getFirstHeaderOrNull(IS_PUBLIC.asHeader())))
-            .createdAt(dateService.iso8601SecondsDateParse(from.getFirstHeaderOrNull(CREATED_AT.asHeader())))
-            .updatedAt(dateService.iso8601SecondsDateParse(from.getFirstHeaderOrNull(UPDATED_AT.asHeader())))
-            .owner(from.getFirstHeaderOrNull(OWNER.asHeader()))
-            .location(from.getFirstHeaderOrNull(LOCATION.asHeader()))
-            .status(Status.fromValue(from.getFirstHeaderOrNull(STATUS.asHeader())));
+      ImageDetails.Builder<?> builder = ImageDetails.builder()
+                .id(from.getFirstHeaderOrNull(ID.asHeader()))
+                .name(from.getFirstHeaderOrNull(NAME.asHeader()))
+                .checksum(from.getFirstHeaderOrNull(CHECKSUM.asHeader()))
+                .minDisk(Long.parseLong(from.getFirstHeaderOrNull(MIN_DISK.asHeader())))
+                .minRam(Long.parseLong(from.getFirstHeaderOrNull(MIN_RAM.asHeader())))
+                .isPublic(Boolean.parseBoolean(from.getFirstHeaderOrNull(IS_PUBLIC.asHeader())))
+                .createdAt(dateService.iso8601SecondsDateParse(from.getFirstHeaderOrNull(CREATED_AT.asHeader())))
+                .updatedAt(dateService.iso8601SecondsDateParse(from.getFirstHeaderOrNull(UPDATED_AT.asHeader())))
+                .owner(from.getFirstHeaderOrNull(OWNER.asHeader()))
+                .location(from.getFirstHeaderOrNull(LOCATION.asHeader()))
+                .status(Status.fromValue(from.getFirstHeaderOrNull(STATUS.asHeader())));
 
       String containerFormat = from.getFirstHeaderOrNull(CONTAINER_FORMAT.asHeader());
       String diskFormat = from.getFirstHeaderOrNull(DISK_FORMAT.asHeader());
       String deletedAt = from.getFirstHeaderOrNull(DELETED_AT.asHeader());
       String size = from.getFirstHeaderOrNull(SIZE.asHeader());
 
-      if (containerFormat != null)
-         builder.containerFormat(ContainerFormat.fromValue(containerFormat));
-      if (diskFormat != null)
-         builder.diskFormat(DiskFormat.fromValue(diskFormat));
-      if (deletedAt != null)
-         builder.deletedAt(dateService.iso8601SecondsDateParse(deletedAt));
-      if (size != null)
-         builder.size(Long.parseLong(size));
+      if (containerFormat != null) builder.containerFormat(ContainerFormat.fromValue(containerFormat));
+      if (diskFormat != null) builder.diskFormat(DiskFormat.fromValue(diskFormat));
+      if (deletedAt != null) builder.deletedAt(dateService.iso8601SecondsDateParse(deletedAt));
+      if (size != null) builder.size(Long.parseLong(size));
 
       // There may be multiple headers that begin with the prefix x-image-meta-property-. These headers are free-form
       // key/value pairs that have been saved with the image metadata. The key is the string after
@@ -94,7 +92,7 @@ public class ParseImageDetailsFromHeaders implements Function<HttpResponse, Imag
       for (Map.Entry<String, String> headerEntry : from.getHeaders().entries()) {
          String headerName = headerEntry.getKey();
          if (!Strings.isNullOrEmpty(headerName) && headerName.startsWith(propertyHeader)
-               && headerName.length() > propertyHeader.length()) {
+                 && headerName.length() > propertyHeader.length()) {
             String propertyName = headerName.substring(PROPERTY.asHeader().length() + 1).toLowerCase();
             String propertyValue = headerEntry.getValue();
             properties.put(propertyName, propertyValue);
